@@ -1,0 +1,9 @@
+model Profile {
+  id         String   @id @default(uuid())
+  user_id    String   @unique
+  org_id     String?
+  full_name  String?
+  created_at DateTime @default(now())
+
+  @@map("profiles")
+}
