@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { AuthService } from '../services/auth.service.js';
-import { StorageService } from '../services/storage.service.js';
+import { authService } from '../services/auth.service.js';
+import { storageService } from '../services/storage.service.js';
 import { sendResponse } from '../utils/response.util.js';
 import { AppError } from '../utils/errors.js';
 import { asyncHandler } from '../middleware/asyncHandler.middleware.js';
@@ -57,7 +57,7 @@ export class AuthController {
      */
     signUp = asyncHandler(async (req: Request, res: Response) => {
         const validated = signUpSchema.parse(req.body);
-        const result = await AuthService.signUp(validated);
+        const result = await authService.signUp(validated);
         sendResponse(res, 201, 'User registered successfully', result);
     });
 
@@ -66,7 +66,7 @@ export class AuthController {
      */
     signIn = asyncHandler(async (req: Request, res: Response) => {
         const validated = signInSchema.parse(req.body);
-        const result = await AuthService.signIn(validated);
+        const result = await authService.signIn(validated);
         sendResponse(res, 200, 'Signed in successfully', result);
     });
 
@@ -75,7 +75,7 @@ export class AuthController {
      */
     socialLogin = asyncHandler(async (req: Request, res: Response) => {
         const validated = socialLoginSchema.parse(req.body);
-        const result = await AuthService.socialLogin(validated);
+        const result = await authService.socialLogin(validated);
         sendResponse(res, 200, 'Social login successful', result);
     });
 
@@ -89,7 +89,7 @@ export class AuthController {
             throw new AppError('Invalid provider', 400, 'INVALID_PROVIDER');
         }
 
-        const url = AuthService.getSocialAuthUrl(provider);
+        const url = authService.getSocialAuthUrl(provider);
         sendResponse(res, 200, 'Social auth URL generated', { url });
     });
 
@@ -103,7 +103,7 @@ export class AuthController {
             throw new AppError('Unauthorized', 401, 'UNAUTHORIZED');
         }
 
-        const user = await AuthService.getUserById(userId);
+        const user = await authService.getUserById(userId);
         sendResponse(res, 200, 'Profile retrieved', user);
     });
 
@@ -118,7 +118,7 @@ export class AuthController {
         }
 
         const validated = updateProfileSchema.parse(req.body);
-        const profile = await AuthService.updateProfile(userId, validated);
+        const profile = await authService.updateProfile(userId, validated);
         sendResponse(res, 200, 'Profile updated successfully', profile);
     });
 
@@ -137,7 +137,7 @@ export class AuthController {
             throw new AppError('No file provided', 400, 'NO_FILE');
         }
 
-        const result = await StorageService.uploadAvatar(userId, {
+        const result = await storageService.uploadAvatar(userId, {
             buffer: file.buffer,
             originalname: file.originalname,
             mimetype: file.mimetype,
@@ -145,7 +145,7 @@ export class AuthController {
         });
 
         // Update profile with avatar URL
-        await AuthService.updateProfile(userId, { avatarUrl: result.url });
+        await authService.updateProfile(userId, { avatarUrl: result.url });
 
         sendResponse(res, 200, 'Avatar uploaded successfully', result);
     });
@@ -161,7 +161,7 @@ export class AuthController {
         }
 
         const validated = changePasswordSchema.parse(req.body);
-        await AuthService.changePassword(userId, validated.oldPassword, validated.newPassword);
+        await authService.changePassword(userId, validated.oldPassword, validated.newPassword);
 
         sendResponse(res, 200, 'Password changed successfully', null);
     });
@@ -176,7 +176,7 @@ export class AuthController {
             throw new AppError('Unauthorized', 401, 'UNAUTHORIZED');
         }
 
-        await AuthService.logout(userId);
+        await authService.logout(userId);
         sendResponse(res, 200, 'Logged out successfully', null);
     });
 
@@ -190,7 +190,7 @@ export class AuthController {
             throw new AppError('Verification token is required', 400, 'MISSING_TOKEN');
         }
 
-        await AuthService.verifyEmail(token);
+        await authService.verifyEmail(token);
         sendResponse(res, 200, 'Email verified successfully', null);
     });
 
@@ -199,7 +199,7 @@ export class AuthController {
      */
     resendVerificationEmail = asyncHandler(async (req: Request, res: Response) => {
         const validated = resendVerificationSchema.parse(req.body);
-        await AuthService.resendVerificationEmail(validated.email);
+        await authService.resendVerificationEmail(validated.email);
         sendResponse(res, 200, 'Verification email sent', null);
     });
 
@@ -208,7 +208,7 @@ export class AuthController {
      */
     forgotPassword = asyncHandler(async (req: Request, res: Response) => {
         const validated = forgotPasswordSchema.parse(req.body);
-        await AuthService.forgotPassword(validated.email);
+        await authService.forgotPassword(validated.email);
         sendResponse(res, 200, 'If that email is registered, you will receive a password reset link', null);
     });
 
@@ -217,7 +217,7 @@ export class AuthController {
      */
     resetPassword = asyncHandler(async (req: Request, res: Response) => {
         const validated = resetPasswordSchema.parse(req.body);
-        await AuthService.resetPassword(validated.token, validated.password);
+        await authService.resetPassword(validated.token, validated.password);
         sendResponse(res, 200, 'Password reset successfully', null);
     });
 }

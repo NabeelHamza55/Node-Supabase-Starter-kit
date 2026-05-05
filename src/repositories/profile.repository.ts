@@ -1,13 +1,8 @@
 import { BaseRepository } from './base.repository.js';
 import { prisma } from '../lib/prisma.js';
+import { Profile } from '../generated/prisma/index.js';
 
-export interface Profile {
-  id: string;
-  user_id: string;
-  org_id: string | null;
-  full_name: string | null;
-  created_at: Date; // Prisma returns Date for DateTime
-}
+export { Profile };
 
 export class ProfileRepository extends BaseRepository<Profile> {
   constructor() {
@@ -20,3 +15,5 @@ export class ProfileRepository extends BaseRepository<Profile> {
     });
   }
 }
+
+export const profileRepository = new ProfileRepository();

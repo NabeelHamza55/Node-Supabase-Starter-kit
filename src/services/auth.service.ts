@@ -1,7 +1,7 @@
 import { config } from '../config/index.js';
 import { prisma } from '../lib/prisma.js';
 import { AppError } from '../utils/errors.js';
-import { EmailService } from './email.service.js';
+import { emailService } from './email.service.js';
 import { authRepository, UserWithProfile } from '../repositories/auth.repository.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
@@ -41,21 +41,21 @@ export class AuthService {
     /**
      * Check if auth is enabled
      */
-    static isAuthEnabled(): boolean {
+    isAuthEnabled(): boolean {
         return config.ENABLE_AUTH;
     }
 
     /**
      * Check if social auth is enabled
      */
-    static isSocialAuthEnabled(): boolean {
+    isSocialAuthEnabled(): boolean {
         return config.ENABLE_SOCIAL_AUTH;
     }
 
     /**
      * Sign up with email and password
      */
-    static async signUp(data: SignUpRequest): Promise<AuthResponse> {
+    async signUp(data: SignUpRequest): Promise<AuthResponse> {
         if (!this.isAuthEnabled()) {
             throw new AppError('Authentication is disabled', 403, 'AUTH_DISABLED');
         }
@@ -88,7 +88,7 @@ export class AuthService {
             await authRepository.updateVerificationToken(user.id, emailVerificationToken);
 
             // Send verification email
-            await EmailService.sendVerificationEmail(
+            await emailService.sendVerificationEmail(
                 user.email,
                 emailVerificationToken,
                 data.fullName
@@ -100,7 +100,7 @@ export class AuthService {
 
         // Send welcome email
         try {
-            await EmailService.sendWelcomeEmail(user.email, data.fullName);
+            await emailService.sendWelcomeEmail(user.email, data.fullName);
         } catch (error) {
             // Log but don't fail if welcome email fails
             console.log('Welcome email failed:', error);
@@ -123,7 +123,7 @@ export class AuthService {
     /**
      * Sign in with email and password
      */
-    static async signIn(data: SignInRequest): Promise<AuthResponse> {
+    async signIn(data: SignInRequest): Promise<AuthResponse> {
         if (!this.isAuthEnabled()) {
             throw new AppError('Authentication is disabled', 403, 'AUTH_DISABLED');
         }
@@ -171,7 +171,7 @@ export class AuthService {
     /**
      * Social login (Google, GitHub, etc.)
      */
-    static async socialLogin(data: SocialAuthRequest): Promise<AuthResponse> {
+    async socialLogin(data: SocialAuthRequest): Promise<AuthResponse> {
         if (!this.isAuthEnabled()) {
             throw new AppError('Authentication is disabled', 403, 'AUTH_DISABLED');
         }
@@ -238,7 +238,7 @@ export class AuthService {
     /**
      * Get Supabase auth URL for social login
      */
-    static getSocialAuthUrl(provider: 'google' | 'github'): string {
+    getSocialAuthUrl(provider: 'google' | 'github'): string {
         const redirectUrl = `${config.API_URL}/api/auth/callback/${provider}`;
 
         if (provider === 'google') {
@@ -266,7 +266,7 @@ export class AuthService {
     /**
      * Verify JWT token
      */
-    static verifyToken(token: string): { userId: string; email: string } {
+    verifyToken(token: string): { userId: string; email: string } {
         try {
             const decoded = jwt.verify(token, config.JWT_SECRET) as {
                 userId: string;
@@ -281,7 +281,7 @@ export class AuthService {
     /**
      * Generate JWT token
      */
-    static generateToken(userId: string, email: string): string {
+    generateToken(userId: string, email: string): string {
         return jwt.sign(
             { userId, email },
             config.JWT_SECRET,
@@ -292,7 +292,7 @@ export class AuthService {
     /**
      * Get user by ID
      */
-    static async getUserById(userId: string) {
+    async getUserById(userId: string) {
         const user = await authRepository.findById(userId);
 
         if (!user) {
@@ -317,7 +317,7 @@ export class AuthService {
     /**
      * Update user profile
      */
-    static async updateProfile(
+    async updateProfile(
         userId: string,
         data: {
             fullName?: string;
@@ -347,7 +347,7 @@ export class AuthService {
     /**
      * Logout (invalidate token)
      */
-    static async logout(userId: string): Promise<void> {
+    async logout(userId: string): Promise<void> {
         const user = await authRepository.findById(userId);
 
         if (!user) {
@@ -358,7 +358,7 @@ export class AuthService {
     /**
      * Change password
      */
-    static async changePassword(
+    async changePassword(
         userId: string,
         oldPassword: string,
         newPassword: string
@@ -387,7 +387,7 @@ export class AuthService {
 
         // Send password change notification
         try {
-            await EmailService.sendPasswordChangeNotification(
+            await emailService.sendPasswordChangeNotification(
                 user.email,
                 user.profile?.full_name || undefined
             );
@@ -399,7 +399,7 @@ export class AuthService {
     /**
      * Verify email with token
      */
-    static async verifyEmail(token: string): Promise<void> {
+    async verifyEmail(token: string): Promise<void> {
         if (!config.ENABLE_EMAIL_VERIFICATION) {
             throw new AppError('Email verification is disabled', 403, 'EMAIL_VERIFICATION_DISABLED');
         }
@@ -417,7 +417,7 @@ export class AuthService {
     /**
      * Resend verification email
      */
-    static async resendVerificationEmail(email: string): Promise<void> {
+    async resendVerificationEmail(email: string): Promise<void> {
         if (!config.ENABLE_EMAIL_VERIFICATION) {
             throw new AppError('Email verification is disabled', 403, 'EMAIL_VERIFICATION_DISABLED');
         }
@@ -439,7 +439,7 @@ export class AuthService {
         await authRepository.updateVerificationToken(user.id, emailVerificationToken);
 
         // Send verification email
-        await EmailService.sendVerificationEmail(
+        await emailService.sendVerificationEmail(
             user.email,
             emailVerificationToken,
             user.profile?.full_name || undefined
@@ -449,7 +449,7 @@ export class AuthService {
     /**
      * Request password reset
      */
-    static async forgotPassword(email: string): Promise<void> {
+    async forgotPassword(email: string): Promise<void> {
         const user = await authRepository.findByEmail(email);
 
         if (!user) {
@@ -465,7 +465,7 @@ export class AuthService {
 
         // Send password reset email
         try {
-            await EmailService.sendPasswordResetEmail(
+            await emailService.sendPasswordResetEmail(
                 user.email,
                 passwordResetToken,
                 user.profile?.full_name || undefined
@@ -478,7 +478,7 @@ export class AuthService {
     /**
      * Reset password with token
      */
-    static async resetPassword(token: string, newPassword: string): Promise<void> {
+    async resetPassword(token: string, newPassword: string): Promise<void> {
         // Find user by reset token
         const user = await authRepository.findByResetToken(token);
 
@@ -504,7 +504,7 @@ export class AuthService {
     /**
      * Get user type
      */
-    static async getUserType(userId: string): Promise<string> {
+    async getUserType(userId: string): Promise<string> {
         const user = await authRepository.findById(userId);
 
         if (!user) {
@@ -517,8 +517,10 @@ export class AuthService {
     /**
      * Check if user is admin
      */
-    static async isAdmin(userId: string): Promise<boolean> {
+    async isAdmin(userId: string): Promise<boolean> {
         const userType = await this.getUserType(userId);
         return userType === 'admin';
     }
 }
+
+export const authService = new AuthService();

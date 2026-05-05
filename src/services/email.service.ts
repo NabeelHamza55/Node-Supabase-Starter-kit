@@ -11,12 +11,12 @@ interface EmailOptions {
 }
 
 export class EmailService {
-    private static transporter: Transporter;
+    private transporter: Transporter | null = null;
 
     /**
      * Initialize SMTP transporter
      */
-    static initialize(): void {
+    initialize(): void {
         this.transporter = nodemailer.createTransport({
             host: config.SMTP_HOST,
             port: config.SMTP_PORT,
@@ -33,13 +33,13 @@ export class EmailService {
     /**
      * Send email
      */
-    static async send(options: EmailOptions): Promise<void> {
+    async send(options: EmailOptions): Promise<void> {
         if (!this.transporter) {
             this.initialize();
         }
 
         try {
-            await this.transporter.sendMail({
+            await this.transporter!.sendMail({
                 from: `${config.SMTP_FROM_NAME} <${config.SMTP_FROM_EMAIL}>`,
                 to: options.to,
                 subject: options.subject,
@@ -61,7 +61,7 @@ export class EmailService {
     /**
      * Send verification email
      */
-    static async sendVerificationEmail(
+    async sendVerificationEmail(
         email: string,
         token: string,
         fullName?: string
@@ -101,7 +101,7 @@ export class EmailService {
     /**
      * Send password reset email
      */
-    static async sendPasswordResetEmail(
+    async sendPasswordResetEmail(
         email: string,
         token: string,
         fullName?: string
@@ -142,7 +142,7 @@ export class EmailService {
     /**
      * Send welcome email
      */
-    static async sendWelcomeEmail(
+    async sendWelcomeEmail(
         email: string,
         fullName?: string
     ): Promise<void> {
@@ -184,7 +184,7 @@ export class EmailService {
     /**
      * Send email changed notification
      */
-    static async sendEmailChangeNotification(
+    async sendEmailChangeNotification(
         email: string,
         fullName?: string
     ): Promise<void> {
@@ -216,7 +216,7 @@ export class EmailService {
     /**
      * Send password changed notification
      */
-    static async sendPasswordChangeNotification(
+    async sendPasswordChangeNotification(
         email: string,
         fullName?: string
     ): Promise<void> {
@@ -245,3 +245,5 @@ export class EmailService {
         });
     }
 }
+
+export const emailService = new EmailService();

@@ -18,14 +18,14 @@ export class StorageService {
     /**
      * Check if storage is enabled
      */
-    static isStorageEnabled(): boolean {
+    isStorageEnabled(): boolean {
         return config.ENABLE_STORAGE;
     }
 
     /**
      * Upload file to Supabase Storage
      */
-    static async uploadFile(
+    async uploadFile(
         file: {
             buffer: Buffer;
             originalname: string;
@@ -53,7 +53,7 @@ export class StorageService {
 
         try {
             // Upload file to Supabase
-            const { data, error } = await supabase.storage
+            const { error } = await supabase.storage
                 .from(bucket)
                 .upload(filePath, file.buffer, {
                     contentType: file.mimetype,
@@ -86,7 +86,7 @@ export class StorageService {
     /**
      * Upload user avatar
      */
-    static async uploadAvatar(
+    async uploadAvatar(
         userId: string,
         file: {
             buffer: Buffer;
@@ -101,10 +101,9 @@ export class StorageService {
         }
 
         const fileName = `avatar-${userId}-${Date.now()}.${this.getFileExtension(file.originalname)}`;
-        const bucket = `${config.STORAGE_BUCKET_NAME}/avatars`;
 
         try {
-            const { data, error } = await supabase.storage
+            const { error } = await supabase.storage
                 .from(config.STORAGE_BUCKET_NAME)
                 .upload(`avatars/${fileName}`, file.buffer, {
                     contentType: file.mimetype,
@@ -136,7 +135,7 @@ export class StorageService {
     /**
      * Delete file from storage
      */
-    static async deleteFile(filePath: string, bucket?: string): Promise<void> {
+    async deleteFile(filePath: string, bucket?: string): Promise<void> {
         if (!this.isStorageEnabled()) {
             throw new AppError('Storage is disabled', 403, 'STORAGE_DISABLED');
         }
@@ -163,7 +162,7 @@ export class StorageService {
     /**
      * Delete multiple files
      */
-    static async deleteFiles(filePaths: string[], bucket?: string): Promise<void> {
+    async deleteFiles(filePaths: string[], bucket?: string): Promise<void> {
         if (!this.isStorageEnabled()) {
             throw new AppError('Storage is disabled', 403, 'STORAGE_DISABLED');
         }
@@ -190,7 +189,7 @@ export class StorageService {
     /**
      * Get public URL for a file
      */
-    static getPublicUrl(filePath: string, bucket?: string): string {
+    getPublicUrl(filePath: string, bucket?: string): string {
         const storageBucket = bucket || config.STORAGE_BUCKET_NAME;
         return supabase.storage.from(storageBucket).getPublicUrl(filePath).data.publicUrl;
     }
@@ -198,7 +197,7 @@ export class StorageService {
     /**
      * Get signed URL for temporary access
      */
-    static async getSignedUrl(
+    async getSignedUrl(
         filePath: string,
         expiresIn: number = 3600, // 1 hour
         bucket?: string
@@ -231,7 +230,7 @@ export class StorageService {
     /**
      * Generate unique file name
      */
-    private static generateFileName(originalName: string): string {
+    private generateFileName(originalName: string): string {
         const timestamp = Date.now();
         const random = Math.random().toString(36).substring(2, 8);
         const extension = this.getFileExtension(originalName);
@@ -241,7 +240,9 @@ export class StorageService {
     /**
      * Get file extension
      */
-    private static getFileExtension(fileName: string): string {
+    private getFileExtension(fileName: string): string {
         return fileName.split('.').pop()?.toLowerCase() || 'bin';
     }
 }
+
+export const storageService = new StorageService();

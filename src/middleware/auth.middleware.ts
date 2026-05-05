@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthService } from '../services/auth.service.js';
+import { authService } from '../services/auth.service.js';
 import { AppError } from '../utils/errors.js';
 import { config } from '../config/index.js';
 
@@ -38,10 +38,10 @@ export const authMiddleware = (
         const token = authHeader.substring(7); // Remove "Bearer " prefix
 
         // Verify token
-        const decoded = AuthService.verifyToken(token);
+        const decoded = authService.verifyToken(token);
 
         // Attach user to request
-        (req as any).user = decoded;
+        req.user = decoded;
 
         next();
     } catch (error) {
@@ -50,6 +50,33 @@ export const authMiddleware = (
         } else {
             next(new AppError('Invalid token', 401, 'UNAUTHORIZED'));
         }
+    }
+};
+
+/**
+ * Middleware to restrict access to admins only
+ */
+export const adminMiddleware = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const userId = req.user?.userId;
+
+        if (!userId) {
+            throw new AppError('Unauthorized', 401, 'UNAUTHORIZED');
+        }
+
+        const isAdmin = await authService.isAdmin(userId);
+
+        if (!isAdmin) {
+            throw new AppError('Forbidden: Admin access required', 403, 'FORBIDDEN');
+        }
+
+        next();
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -66,8 +93,8 @@ export const optionalAuthMiddleware = (
 
         if (authHeader && authHeader.startsWith('Bearer ')) {
             const token = authHeader.substring(7);
-            const decoded = AuthService.verifyToken(token);
-            (req as any).user = decoded;
+            const decoded = authService.verifyToken(token);
+            req.user = decoded;
         }
 
         next();
@@ -89,7 +116,7 @@ export const requireProvider = (provider: string) => {
                 throw new AppError('Unauthorized', 401, 'UNAUTHORIZED');
             }
 
-            const user = await AuthService.getUserById(userId);
+            const user = await authService.getUserById(userId);
 
             // @ts-ignore
             if (user.provider !== provider) {

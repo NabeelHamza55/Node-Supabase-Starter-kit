@@ -145,3 +145,5 @@ vite.config.ts.timestamp-*
 *generated*
 /docs
 GEMINI.md
+
+**/.DS_Store

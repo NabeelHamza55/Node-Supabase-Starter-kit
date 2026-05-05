@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { ProfileController } from '../controllers/profile.controller.js';
+import { profileController } from '../controllers/profile.controller.js';
 
 const router = Router();
-const controller = new ProfileController();
+const controller = profileController;
 
 router.get('/', controller.getAll);
 router.get('/:id', controller.getOne);

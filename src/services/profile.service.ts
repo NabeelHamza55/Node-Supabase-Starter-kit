@@ -1,10 +1,12 @@
-import { ProfileRepository, Profile } from '../repositories/profile.repository.js';
+import { profileRepository, Profile } from '../repositories/profile.repository.js';
 import { BaseService } from './base.service.js';
 
 export class ProfileService extends BaseService<Profile> {
   constructor() {
-    super(new ProfileRepository());
+    super(profileRepository);
   }
 
   // Add profile-specific business logic methods here
 }
+
+export const profileService = new ProfileService();
