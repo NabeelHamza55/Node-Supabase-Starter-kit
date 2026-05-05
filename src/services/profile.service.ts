@@ -1,4 +1,5 @@
-import { profileRepository, Profile } from '../repositories/profile.repository.js';
+import { profileRepository } from '../repositories/profile.repository.js';
+import type { Profile } from '../repositories/profile.repository.js';
 import { BaseService } from './base.service.js';
 
 export class ProfileService extends BaseService<Profile> {

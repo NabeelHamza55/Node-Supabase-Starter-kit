@@ -1,8 +1,8 @@
 import { BaseRepository } from './base.repository.js';
 import { prisma } from '../lib/prisma.js';
-import { Profile } from '../generated/prisma/index.js';
+import type { Profile } from '../generated/prisma/index.js';
 
-export { Profile };
+export type { Profile };
 
 export class ProfileRepository extends BaseRepository<Profile> {
   constructor() {

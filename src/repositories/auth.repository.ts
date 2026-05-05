@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma.js';
 import { BaseRepository } from './base.repository.js';
-import { User, Profile } from '../generated/prisma/index.js';
+import type { User, Profile } from '../generated/prisma/index.js';
 import { NotFoundError } from '../utils/errors.js';
 
 export type UserWithProfile = User & { profile: Profile | null };
