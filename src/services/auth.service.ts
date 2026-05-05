@@ -28,7 +28,7 @@ interface AuthResponse {
         fullName?: string;
         userType: string;
     };
-    token: string;
+    token: string | null;
 }
 
 interface SocialAuthRequest {
@@ -108,8 +108,8 @@ export class AuthService {
             console.log('Welcome email failed:', error);
         }
 
-        // Create JWT token
-        const token = this.generateToken(user.id, user.email);
+        // Create JWT token only if verification is disabled
+        const token = !config.ENABLE_EMAIL_VERIFICATION ? this.generateToken(user.id, user.email) : null;
 
         return {
             user: {
