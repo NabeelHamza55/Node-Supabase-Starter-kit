@@ -7,24 +7,18 @@ interface ApiResponse<T = any> {
   error: any | null;
 }
 
+/**
+ * Standardized API response utility
+ */
 export const sendResponse = <T>(
   res: Response,
-  {
-    statusCode = 200,
-    status = true,
-    message = 'Operation successful',
-    data = null,
-    error = null,
-  }: {
-    statusCode?: number;
-    status?: boolean;
-    message?: string;
-    data?: T | null;
-    error?: any;
-  }
+  statusCode: number = 200,
+  message: string = 'Operation successful',
+  data: T | null = null,
+  error: any = null
 ) => {
   const response: ApiResponse<T> = {
-    status,
+    status: statusCode >= 200 && statusCode < 300,
     message,
     data,
     error,

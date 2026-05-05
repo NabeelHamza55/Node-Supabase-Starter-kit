@@ -52,11 +52,5 @@ export const errorHandler = (
     code: errorCode
   };
 
-  return sendResponse(res, {
-    statusCode,
-    status: false,
-    message,
-    data: null,
-    error: errorDetails,
-  });
+  return sendResponse(res, statusCode, message, null, errorDetails);
 };

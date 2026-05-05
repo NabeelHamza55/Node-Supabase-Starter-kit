@@ -11,41 +11,26 @@ export abstract class BaseController<T extends Record<string, any>> {
 
   getAll = asyncHandler(async (req: Request, res: Response) => {
     const data = await this.service.getAll();
-    sendResponse(res, {
-      message: `${this.resourceName}s retrieved successfully`,
-      data,
-    });
+    sendResponse(res, 200, `${this.resourceName}s retrieved successfully`, data);
   });
 
   getOne = asyncHandler(async (req: Request, res: Response) => {
     const data = await this.service.getById(req.params.id as string);
-    sendResponse(res, {
-      message: `${this.resourceName} retrieved successfully`,
-      data,
-    });
+    sendResponse(res, 200, `${this.resourceName} retrieved successfully`, data);
   });
 
   create = asyncHandler(async (req: Request, res: Response) => {
     const data = await this.service.create(req.body);
-    sendResponse(res, {
-      statusCode: 201,
-      message: `${this.resourceName} created successfully`,
-      data,
-    });
+    sendResponse(res, 201, `${this.resourceName} created successfully`, data);
   });
 
   update = asyncHandler(async (req: Request, res: Response) => {
     const data = await this.service.update(req.params.id as string, req.body);
-    sendResponse(res, {
-      message: `${this.resourceName} updated successfully`,
-      data,
-    });
+    sendResponse(res, 200, `${this.resourceName} updated successfully`, data);
   });
 
   delete = asyncHandler(async (req: Request, res: Response) => {
     await this.service.delete(req.params.id as string);
-    sendResponse(res, {
-      message: `${this.resourceName} deleted successfully`,
-    });
+    sendResponse(res, 200, `${this.resourceName} deleted successfully`);
   });
 }

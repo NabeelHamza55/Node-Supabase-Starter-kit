@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { config } from './config/index.js';
 import { requestLogger } from './middleware/requestLogger.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import routes from './routes/index.js';
@@ -9,7 +10,10 @@ const app = express();
 
 // Global Middleware
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: config.ALLOWED_ORIGINS,
+  credentials: true,
+}));
 app.use(express.json());
 
 // Request logging
